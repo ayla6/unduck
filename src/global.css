@@ -82,14 +82,7 @@ textarea {
 }
 
 /* Update url-input width to be 100% since container will control max width */
-.url-input {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-    background: #f5f5f5;
-}
-
+.url-input,
 .default-bang-input {
     padding: 8px 12px;
     border: 1px solid #ddd;
@@ -147,46 +140,47 @@ textarea {
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    color: #ddd;
-  }
+    body {
+        color: #ddd;
+    }
 
-  #app {
-    background-color: #131313;
-  }
+    #app {
+        background-color: #131313;
+    }
 
-  a {
-    color: #a9a9a9;
-  }
+    a {
+        color: #a9a9a9;
+    }
 
-  a:hover {
-    color: #888;
-  }
+    a:hover {
+        color: #888;
+    }
 
-  .footer,
-  .footer a {
-    color: #999;
-  }
+    .footer,
+    .footer a {
+        color: #999;
+    }
 
-  .footer a:hover {
-    color: #ccc;
-  }
+    .footer a:hover {
+        color: #ccc;
+    }
 
-  .url-input {
-    border-color: #3d3d3d;
-    background-color: #191919;
-    color: #fff;
-  }
+    .url-input,
+    .default-bang-input {
+        border-color: #3d3d3d;
+        background-color: #191919;
+        color: #fff;
+    }
 
-  .copy-button img {
-    filter: invert(1);
-  }
+    .copy-button img {
+        filter: invert(1);
+    }
 
-  .copy-button:hover {
-    background: #222;
-  }
+    .copy-button:hover {
+        background: #222;
+    }
 
-  .copy-button:active {
-    background: #333;
-  }
+    .copy-button:active {
+        background: #333;
+    }
 }
