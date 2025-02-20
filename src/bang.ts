@@ -1,6 +1,6 @@
 // This file was (mostly) ripped from https://duckduckgo.com/bang.js
 
-export const bangs = [
+export const bangs: { t: string, u: string }[] = [
   {
     t: "t3",
     u: "https://www.t3.chat/new?q={{{s}}}"

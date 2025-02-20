@@ -75,16 +75,20 @@ textarea {
     align-items: center;
     gap: 8px;
     margin-top: 16px;
+    margin-bottom: 8px;
 }
 
-.customize-button {
-    font-size: 13px;
+.options-area {
+    display: flex;
+    gap: 8px;
+    > * {
+        flex-grow: 1;
+    }
+}
+
+.default-bang-button {
+    padding: 13px;
     line-height: 1;
-}
-
-.customize-button,
-.customize-section {
-    width: 40%;
 }
 
 .content-container {
@@ -103,7 +107,8 @@ textarea {
     background: #f5f5f5;
 }
 
-button {
+button,
+.bang-end-label {
     padding: 8px;
     color: #666;
     border-radius: 4px;
@@ -128,6 +133,23 @@ button:active {
 
 .copy-button.copied {
     background: #28a745;
+}
+
+.bang-end-label {
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bang-end-label:hover {
+    background: #f0f0f0;
+}
+
+.bang-end-checkbox {
+    accent-color: #666;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -167,11 +189,24 @@ button:active {
         filter: invert(1);
     }
 
+    button,
+    .bang-end-label {
+        color: #999;
+    }
+
     button:hover {
         background: #222;
     }
 
     button:active {
         background: #333;
+    }
+
+    .bang-end-label:hover {
+        background: #222;
+    }
+
+    .bang-end-checkbox {
+        accent-color: #999;
     }
 }

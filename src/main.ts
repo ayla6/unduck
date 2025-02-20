@@ -19,15 +19,20 @@ function noSearchDefaultPageRender() {
           <button class="copy-button">
             <img src="/clipboard.svg" alt="Copy" />
           </button>
-          <br/>
-          <button class="customize-button">Enable custom default bang</button>
-          <div class="customize-section" style="display: none;">
+        </div>
+        <div class="options-area">
+          <button class="default-bang-button">Enable custom default bang</button>
+          <div class="default-bang-section" style="display: none;">
             <input
               type="text"
               class="default-bang-input"
               placeholder="ddg (default)"
             />
           </div>
+          <label class="bang-end-label">
+            <input type="checkbox" class="bang-end-checkbox" />
+            <span>Bang at the end (bang!)</span>
+          </label>
         </div>
       </div>
     </div>
@@ -36,29 +41,45 @@ function noSearchDefaultPageRender() {
   const copyButton = app.querySelector<HTMLButtonElement>(".copy-button")!;
   const copyIcon = copyButton.querySelector("img")!;
   const urlInput = app.querySelector<HTMLInputElement>(".url-input")!;
-  const customizeButton =
-    app.querySelector<HTMLButtonElement>(".customize-button")!;
-  const customizeSection =
-    app.querySelector<HTMLDivElement>(".customize-section")!;
-  const defaultBangInput = customizeSection.querySelector<HTMLInputElement>(
+  const defaultBangButton = app.querySelector<HTMLButtonElement>(
+    ".default-bang-button",
+  )!;
+  const defaultBangSection = app.querySelector<HTMLDivElement>(
+    ".default-bang-section",
+  )!;
+  const defaultBangInput = defaultBangSection.querySelector<HTMLInputElement>(
     ".default-bang-input",
   )!;
+  const bangEndCheckbox =
+    app.querySelector<HTMLInputElement>(".bang-end-checkbox")!;
   const originalUrl = urlInput.value;
 
-  customizeButton.addEventListener("click", (e) => {
+  defaultBangButton.addEventListener("click", (e) => {
     e.preventDefault();
-    customizeSection.style.display = "block";
-    customizeButton.style.display = "none";
+    defaultBangSection.style.display = "block";
+    defaultBangButton.style.display = "none";
   });
 
-  defaultBangInput.addEventListener("input", () => {
+  const updateUrl = () => {
     const defaultBang = defaultBangInput.value.trim();
-    if (defaultBang === "") {
+    const bangAtEnd = bangEndCheckbox.checked;
+
+    if (defaultBang === "" && !bangAtEnd) {
       urlInput.value = originalUrl;
     } else {
-      urlInput.value = `${ownURL}?q=%s&default=${defaultBang}`;
+      let newUrl = `${ownURL}?q=%s`;
+      if (defaultBang) {
+        newUrl += `&default=${defaultBang}`;
+      }
+      if (bangAtEnd) {
+        newUrl += "&bae=1";
+      }
+      urlInput.value = newUrl;
     }
-  });
+  };
+
+  defaultBangInput.addEventListener("input", updateUrl);
+  bangEndCheckbox.addEventListener("change", updateUrl);
 
   copyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(urlInput.value);
@@ -73,6 +94,8 @@ function noSearchDefaultPageRender() {
 function getBangredirectUrl() {
   const url = new URL(window.location.href);
   const query = url.searchParams.get("q")?.trim() ?? "";
+  const bangAtEnd = Boolean(url.searchParams.get("bae"));
+  console.log(bangAtEnd);
   const urlDefault =
     url.searchParams.get("default")?.trim() ??
     localStorage.getItem("default-bang") ??
@@ -83,15 +106,17 @@ function getBangredirectUrl() {
     return null;
   }
 
-  const match = query.match(/!(\S+)/i);
+  const match = query.match(bangAtEnd ? /!(\S+)|(\S+)!/i : /!(\S+)/i);
 
-  const bangCandidate = match?.[1]?.toLowerCase() ?? urlDefault;
+  const bangCandidate = (match?.[1] ?? match?.[2])?.toLowerCase() ?? urlDefault;
   const selectedBang =
     bangs.find((b) => b.t === bangCandidate) ??
     bangs.find((b) => b.t === urlDefault);
 
   // Remove the first bang from the query
-  const cleanQuery = query.replace(/!\S+\s*/i, "").trim();
+  const cleanQuery = query
+    .replace(bangAtEnd ? /(!\S+)|(\S+!)\s*/i : /!\S+\s*/i, "")
+    .trim();
 
   // If the query is just `!gh`, use `github.com` instead of `github.com/search?q=`
   if (cleanQuery === "")
