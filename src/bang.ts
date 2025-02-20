@@ -31,8 +31,15 @@ export const bangs: Record<string, Bang> = {
       (await fetch("https://duckduckgo.com/bang.js").then((r) =>
         r.json(),
       )) as Bang[]
-    ).map((bang) => {
-      return [bang.t, bang];
-    }),
+    )
+      .filter(
+        (bang) =>
+          !bang.c?.toLowerCase().includes("porn") &&
+          !bang.d.toLowerCase().includes("porn") &&
+          !bang.s.toLowerCase().includes("porn"),
+      )
+      .map((bang) => {
+        return [bang.t, bang];
+      }),
   ),
 };
