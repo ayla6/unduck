@@ -1,9 +1,8 @@
 import { bangs } from "./bang" with { type: "macro" };
 import "./global.css";
 
-const ownURL = `${document.location.protocol}//${window.location.host}/`;
-
 function noSearchDefaultPageRender() {
+  const ownURL = `${document.location.protocol}//${window.location.host}/`;
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
