@@ -41354,12 +41354,12 @@ export const bangs = [
     u: "http://www.sears.com/shc/s/search_10153_12605?keyword={{{s}}}"
   },
   {
-    t: "searx.me",
-    u: "http://searx.me/?q={{{s}}}&pageno=1&category_general"
+    t: "priv.au",
+    u: "http://priv.au/?q={{{s}}}&pageno=1&category_general"
   },
   {
     t: "searx",
-    u: "https://searx.me/?q={{{s}}}"
+    u: "https://priv.au/?q={{{s}}}"
   },
   {
     t: "sea",
