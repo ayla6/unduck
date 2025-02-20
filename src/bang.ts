@@ -1,5 +1,4 @@
 // This file was ripped from https://duckduckgo.com/bang.js
-import rawBangs from "./bangs.json" with { type: "json" };
 
 type Bang = {
   c?: string;
@@ -28,7 +27,11 @@ export const bangs: Record<string, Bang> = {
     u: "https://www.t3.chat/new?q={{{s}}}",
   },
   ...Object.fromEntries(
-    rawBangs.map((bang) => {
+    (
+      (await fetch("https://duckduckgo.com/bang.js").then((r) =>
+        r.json(),
+      )) as Bang[]
+    ).map((bang) => {
       return [bang.t, bang];
     }),
   ),
