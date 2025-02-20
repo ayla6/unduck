@@ -106,7 +106,7 @@ function getBangredirectUrl() {
 
   // If the query is just `!gh`, use `github.com` instead of `github.com/search?q=`
   if (cleanQuery === "")
-    return selectedBang ? `https://${selectedBang.d}` : null;
+    return selectedBang ? `https://${new URL(selectedBang.u).host}` : null;
 
   // Format of the url is:
   // https://www.google.com/search?q={{{s}}}
