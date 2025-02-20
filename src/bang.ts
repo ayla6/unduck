@@ -41362,6 +41362,10 @@ export const bangs: { t: string, u: string }[] = [
     u: "https://priv.au/?q={{{s}}}"
   },
   {
+    t: "xng",
+    u: "https://priv.au/?q={{{s}}}"
+  },
+  {
     t: "sea",
     u: "https://searchcode.com/?q={{{s}}}"
   },
