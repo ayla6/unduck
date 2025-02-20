@@ -1,8 +1,10 @@
 import { bangs } from "./bang";
 import "./global.css";
 
-const customBangs = localStorage.getItem("custom-bangs");
-if (customBangs) bangs.push(...JSON.parse(customBangs));
+type BangItem = { u: string; t: string };
+const customBangs: BangItem[] = JSON.parse(
+  localStorage.getItem("custom-bangs") || "[]",
+);
 
 function noSearchDefaultPageRender() {
   // Basic setup
@@ -89,7 +91,7 @@ function noSearchDefaultPageRender() {
     app.querySelector<HTMLButtonElement>(".save-bangs-button")!;
   const originalUrl = urlInput.value;
 
-  let bangsArray: Array<{ t: string; u: string }> = [];
+  let customBangsArray: Array<{ t: string; u: string }> = [];
 
   function addCustomBangToList(bang: string, url: string) {
     const newBangElement = document.createElement("div");
@@ -110,11 +112,9 @@ function noSearchDefaultPageRender() {
   }
 
   function loadCustomBangs() {
-    const customBangs = localStorage.getItem("custom-bangs");
     if (customBangs) {
-      bangsArray = JSON.parse(customBangs);
       customBangsList.innerHTML = "";
-      bangsArray.forEach((bang) => {
+      customBangs.forEach((bang) => {
         addCustomBangToList(bang.t, bang.u.replace("{{{s}}}", "%s"));
       });
     }
@@ -124,14 +124,14 @@ function noSearchDefaultPageRender() {
 
   saveBangsButton.addEventListener("click", () => {
     const inputs = customBangsList.querySelectorAll(".custom-bang");
-    bangsArray = Array.from(inputs).map((bangDiv) => ({
+    customBangsArray = Array.from(inputs).map((bangDiv) => ({
       t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
         .value,
       u: (
         bangDiv.querySelector(".custom-bang-url") as HTMLInputElement
       ).value.replace("%s", "{{{s}}}"),
     }));
-    localStorage.setItem("custom-bangs", JSON.stringify(bangsArray));
+    localStorage.setItem("custom-bangs", JSON.stringify(customBangsArray));
   });
 
   // Event handlers
@@ -147,12 +147,6 @@ function noSearchDefaultPageRender() {
       }
 
       // Check if bang already exists
-      const existingBang = bangsArray.find((b) => b.t === bang);
-      if (existingBang) {
-        alert("This bang already exists");
-        return;
-      }
-
       const existingCustomBangs = Array.from(
         customBangsList.querySelectorAll(".custom-bang-input"),
       ).map((input) => (input as HTMLInputElement).value);
@@ -227,10 +221,12 @@ function getBangredirectUrl() {
 
   const match = query.match(bangAtEnd ? /!(\S+)|(\S+)!/i : /!(\S+)/i);
 
+  const multiSearch = (candidate: string) =>
+    customBangs.find((b) => b.t === candidate) ??
+    bangs.find((b) => b.t === candidate);
+
   const bangCandidate = (match?.[1] ?? match?.[2])?.toLowerCase() ?? urlDefault;
-  const selectedBang =
-    bangs.find((b) => b.t === bangCandidate) ??
-    bangs.find((b) => b.t === urlDefault);
+  const selectedBang = multiSearch(bangCandidate) ?? multiSearch(urlDefault);
 
   // Remove the first bang from the query
   const cleanQuery = query
