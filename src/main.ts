@@ -30,7 +30,7 @@ function noSearchDefaultPageRender() {
             />
           </div>
           <label class="bang-end-label">
-            <input type="checkbox" class="bang-end-checkbox" />
+            <input type="checkbox" class="bang-end-checkbox" checked=true />
             <span>Bang at the end (bang!)</span>
           </label>
         </div>
@@ -64,15 +64,15 @@ function noSearchDefaultPageRender() {
     const defaultBang = defaultBangInput.value.trim();
     const bangAtEnd = bangEndCheckbox.checked;
 
-    if (defaultBang === "" && !bangAtEnd) {
+    if (defaultBang === "" && bangAtEnd) {
       urlInput.value = originalUrl;
     } else {
       let newUrl = `${ownURL}?q=%s`;
       if (defaultBang) {
         newUrl += `&default=${defaultBang}`;
       }
-      if (bangAtEnd) {
-        newUrl += "&bae=1";
+      if (!bangAtEnd) {
+        newUrl += "&nobae=1";
       }
       urlInput.value = newUrl;
     }
@@ -80,6 +80,8 @@ function noSearchDefaultPageRender() {
 
   defaultBangInput.addEventListener("input", updateUrl);
   bangEndCheckbox.addEventListener("change", updateUrl);
+
+  updateUrl();
 
   copyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(urlInput.value);
@@ -94,7 +96,7 @@ function noSearchDefaultPageRender() {
 function getBangredirectUrl() {
   const url = new URL(window.location.href);
   const query = url.searchParams.get("q")?.trim() ?? "";
-  const bangAtEnd = Boolean(url.searchParams.get("bae"));
+  const bangAtEnd = !Boolean(url.searchParams.get("nobae"));
   console.log(bangAtEnd);
   const urlDefault =
     url.searchParams.get("default")?.trim() ??
