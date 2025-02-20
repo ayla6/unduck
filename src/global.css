@@ -98,8 +98,7 @@ textarea {
 }
 
 /* Update url-input width to be 100% since container will control max width */
-.url-input,
-.default-bang-input {
+input {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -152,6 +151,21 @@ button:active {
     cursor: pointer;
 }
 
+.custom-bang-section {
+    display: flex;
+    flex-flow: column;
+    gap: 4px;
+}
+
+.custom-bang {
+    display: flex;
+    gap: 4px;
+}
+
+.custom-bang button {
+    width: 25%;
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         color: #ddd;
@@ -178,8 +192,7 @@ button:active {
         color: #ccc;
     }
 
-    .url-input,
-    .default-bang-input {
+    input {
         border-color: #3d3d3d;
         background-color: #191919;
         color: #fff;

@@ -1,9 +1,15 @@
 import { bangs } from "./bang";
 import "./global.css";
 
+const customBangs = localStorage.getItem("custom-bangs");
+if (customBangs) bangs.push(...JSON.parse(customBangs));
+
 function noSearchDefaultPageRender() {
+  // Basic setup
   const ownURL = `${document.location.protocol}//${window.location.host}/`;
   const app = document.querySelector<HTMLDivElement>("#app")!;
+
+  // Render the main HTML template
   app.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
       <div class="content-container">
@@ -34,10 +40,29 @@ function noSearchDefaultPageRender() {
             <span>Bang at the end (bang!)</span>
           </label>
         </div>
+        <div class="custom-bang-section">
+          <h3>Custom Bangs</h3>
+          <div id="custom-bangs-list"></div>
+          <div class="custom-bang">
+            <input
+              type="text"
+              class="custom-bang-input"
+              placeholder="Bang (e.g. gh)"
+            />
+            <input
+              type="text"
+              class="custom-bang-url"
+              placeholder="Target URL with %s"
+            />
+            <button class="custom-bang-add">Add</button>
+          </div>
+          <button class="save-bangs-button">Save</button>
+        </div>
       </div>
     </div>
   `;
 
+  // Get DOM elements
   const copyButton = app.querySelector<HTMLButtonElement>(".copy-button")!;
   const copyIcon = copyButton.querySelector("img")!;
   const urlInput = app.querySelector<HTMLInputElement>(".url-input")!;
@@ -52,7 +77,84 @@ function noSearchDefaultPageRender() {
   )!;
   const bangEndCheckbox =
     app.querySelector<HTMLInputElement>(".bang-end-checkbox")!;
+  const customBangsList =
+    app.querySelector<HTMLDivElement>("#custom-bangs-list")!;
+  const customBangInput =
+    app.querySelector<HTMLInputElement>(".custom-bang-input")!;
+  const customBangUrl =
+    app.querySelector<HTMLInputElement>(".custom-bang-url")!;
+  const customBangAdd =
+    app.querySelector<HTMLButtonElement>(".custom-bang-add")!;
+  const saveBangsButton =
+    app.querySelector<HTMLButtonElement>(".save-bangs-button")!;
   const originalUrl = urlInput.value;
+
+  let bangsArray: Array<{ t: string; u: string }> = [];
+
+  function addCustomBangToList(bang: string, url: string) {
+    const newBangElement = document.createElement("div");
+    newBangElement.className = "custom-bang";
+    newBangElement.innerHTML = `
+      <input type="text" value="${bang}" class="custom-bang-input" />
+      <input type="text" value="${url}" class="custom-bang-url" />
+      <button class="custom-bang-delete">Delete</button>
+    `;
+
+    newBangElement
+      .querySelector(".custom-bang-delete")
+      ?.addEventListener("click", () => {
+        newBangElement.remove();
+      });
+
+    customBangsList.appendChild(newBangElement);
+  }
+
+  function loadCustomBangs() {
+    const customBangs = localStorage.getItem("custom-bangs");
+    if (customBangs) {
+      bangsArray = JSON.parse(customBangs);
+      customBangsList.innerHTML = "";
+      bangsArray.forEach((bang) => {
+        addCustomBangToList(bang.t, bang.u.replace("{{{s}}}", "%s"));
+      });
+    }
+  }
+
+  loadCustomBangs();
+
+  saveBangsButton.addEventListener("click", () => {
+    const inputs = customBangsList.querySelectorAll(".custom-bang");
+    bangsArray = Array.from(inputs).map((bangDiv) => ({
+      t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
+        .value,
+      u: (
+        bangDiv.querySelector(".custom-bang-url") as HTMLInputElement
+      ).value.replace("%s", "{{{s}}}"),
+    }));
+    localStorage.setItem("custom-bangs", JSON.stringify(bangsArray));
+  });
+
+  // Event handlers
+  customBangAdd.addEventListener("click", () => {
+    const bang = customBangInput.value.trim();
+    const url = customBangUrl.value.trim();
+
+    try {
+      new URL(url);
+      if (!url.includes("%s")) {
+        alert("URL must contain %s as a placeholder");
+        return;
+      }
+      if (bang && url) {
+        addCustomBangToList(bang, url);
+        customBangInput.value = "";
+        customBangUrl.value = "";
+      }
+    } catch (e) {
+      alert("Please enter a valid URL");
+      return;
+    }
+  });
 
   defaultBangButton.addEventListener("click", (e) => {
     e.preventDefault();
@@ -60,7 +162,7 @@ function noSearchDefaultPageRender() {
     defaultBangButton.style.display = "none";
   });
 
-  const updateUrl = () => {
+  function updateUrl() {
     const defaultBang = defaultBangInput.value.trim();
     const bangAtEnd = bangEndCheckbox.checked;
 
@@ -76,7 +178,7 @@ function noSearchDefaultPageRender() {
       }
       urlInput.value = newUrl;
     }
-  };
+  }
 
   defaultBangInput.addEventListener("input", updateUrl);
   bangEndCheckbox.addEventListener("change", updateUrl);
