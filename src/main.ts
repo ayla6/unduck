@@ -72,7 +72,7 @@ function noSearchDefaultPageRender() {
         newUrl += `&default=${defaultBang}`;
       }
       if (!bangAtEnd) {
-        newUrl += "&nobae=1";
+        newUrl += "&nobae";
       }
       urlInput.value = newUrl;
     }
@@ -96,8 +96,7 @@ function noSearchDefaultPageRender() {
 function getBangredirectUrl() {
   const url = new URL(window.location.href);
   const query = url.searchParams.get("q")?.trim() ?? "";
-  const bangAtEnd = !Boolean(url.searchParams.get("nobae"));
-  console.log(bangAtEnd);
+  const bangAtEnd = url.searchParams.get("nobae") === null;
   const urlDefault =
     url.searchParams.get("default")?.trim() ??
     localStorage.getItem("default-bang") ??
