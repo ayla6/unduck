@@ -26,7 +26,7 @@ function noSearchDefaultPageRender() {
             <input
               type="text"
               class="default-bang-input"
-              placeholder="g (default)"
+              placeholder="ddg (default)"
             />
           </div>
         </div>
@@ -86,7 +86,7 @@ function getBangredirectUrl() {
   const urlDefault =
     url.searchParams.get("default")?.trim() ??
     localStorage.getItem("default-bang") ??
-    "g";
+    "ddg";
   const defaultBang = bangs.find((b) => b.t === urlDefault);
   if (!query) {
     noSearchDefaultPageRender();
