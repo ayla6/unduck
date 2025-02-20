@@ -1,5 +1,7 @@
-import { bangs } from "./bang";
+import { bangs } from "./bang" with { type: "macro" };
 import "./global.css";
+
+const ownURL = `${document.location.protocol}//${window.location.host}/`;
 
 function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -12,7 +14,7 @@ function noSearchDefaultPageRender() {
           <input
             type="text"
             class="url-input"
-            value="https://${window.location.host}/?q=%s"
+            value="${ownURL}?q=%s"
             readonly
           />
           <button class="copy-button">
@@ -66,7 +68,7 @@ function noSearchDefaultPageRender() {
     if (defaultBang === "") {
       urlInput.value = originalUrl;
     } else {
-      urlInput.value = `https://unduck.link?q=%s&default=${defaultBang}`;
+      urlInput.value = `${ownURL}?q=%s&default=${defaultBang}`;
     }
   });
 
@@ -87,7 +89,7 @@ function getBangredirectUrl() {
     url.searchParams.get("default")?.trim() ??
     localStorage.getItem("default-bang") ??
     "ddg";
-  const defaultBang = bangs.find((b) => b.t === urlDefault);
+
   if (!query) {
     noSearchDefaultPageRender();
     return null;
@@ -96,7 +98,8 @@ function getBangredirectUrl() {
   const match = query.match(/!(\S+)/i);
 
   const bangCandidate = match?.[1]?.toLowerCase();
-  const selectedBang = bangs.find((b) => b.t === bangCandidate) ?? defaultBang;
+  const selectedBang = bangs[bangCandidate ?? urlDefault];
+  console.log(bangCandidate, urlDefault);
 
   // Remove the first bang from the query
   const cleanQuery = query.replace(/!\S+\s*/i, "").trim();
