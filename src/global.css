@@ -36,6 +36,10 @@ body {
     color: #1a1a1a;
 }
 
+#app {
+    background-color: #fffff;
+}
+
 h1,
 h2,
 h3,
