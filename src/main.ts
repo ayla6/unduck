@@ -1,4 +1,4 @@
-import { bangs } from "./bang" with { type: "macro" };
+import { bangs } from "./bang";
 import "./global.css";
 
 function noSearchDefaultPageRender() {
@@ -96,9 +96,10 @@ function getBangredirectUrl() {
 
   const match = query.match(/!(\S+)/i);
 
-  const bangCandidate = match?.[1]?.toLowerCase();
-  const selectedBang = bangs[bangCandidate ?? urlDefault];
-  console.log(bangCandidate, urlDefault);
+  const bangCandidate = match?.[1]?.toLowerCase() ?? urlDefault;
+  const selectedBang =
+    bangs.find((b) => b.t === bangCandidate) ??
+    bangs.find((b) => b.t === urlDefault);
 
   // Remove the first bang from the query
   const cleanQuery = query.replace(/!\S+\s*/i, "").trim();
