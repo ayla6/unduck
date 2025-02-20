@@ -70,7 +70,6 @@ textarea {
     font: inherit;
 }
 
-/* Add these new styles */
 .url-container {
     display: flex;
     align-items: center;
@@ -78,7 +77,16 @@ textarea {
     margin-top: 16px;
 }
 
-/* Add this new style */
+.customize-button {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.customize-button,
+.customize-section {
+    width: 40%;
+}
+
 .content-container {
     max-width: 36rem;
     text-align: center;
@@ -95,7 +103,7 @@ textarea {
     background: #f5f5f5;
 }
 
-.copy-button {
+button {
     padding: 8px;
     color: #666;
     border-radius: 4px;
@@ -105,11 +113,11 @@ textarea {
     justify-content: center;
 }
 
-.copy-button:hover {
+button:hover {
     background: #f0f0f0;
 }
 
-.copy-button:active {
+button:active {
     background: #e5e5e5;
 }
 
@@ -120,27 +128,6 @@ textarea {
 
 .copy-button.copied {
     background: #28a745;
-}
-
-/* Add footer styles */
-.footer {
-    position: fixed;
-    bottom: 16px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 14px;
-    color: #666;
-}
-
-.footer a {
-    color: #666;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.footer a:hover {
-    color: #333;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -180,11 +167,11 @@ textarea {
         filter: invert(1);
     }
 
-    .copy-button:hover {
+    button:hover {
         background: #222;
     }
 
-    .copy-button:active {
+    button:active {
         background: #333;
     }
 }

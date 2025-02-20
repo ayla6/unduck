@@ -19,10 +19,8 @@ function noSearchDefaultPageRender() {
           <button class="copy-button">
             <img src="/clipboard.svg" alt="Copy" />
           </button>
-          <br>
-          <p class="customize-link-container">
-            <a href="#" class="customize-link">Want to customize the default bang?</a>
-          </p>
+          <br/>
+          <button class="customize-button">Enable custom default bang</button>
           <div class="customize-section" style="display: none;">
             <input
               type="text"
@@ -32,34 +30,25 @@ function noSearchDefaultPageRender() {
           </div>
         </div>
       </div>
-      <footer class="footer">
-        <a href="https://t3.chat" target="_blank">t3.chat</a>
-        •
-        <a href="https://x.com/theo" target="_blank">theo</a>
-        •
-        <a href="https://github.com/t3dotgg/unduck" target="_blank">github</a>
-      </footer>
     </div>
   `;
 
   const copyButton = app.querySelector<HTMLButtonElement>(".copy-button")!;
   const copyIcon = copyButton.querySelector("img")!;
   const urlInput = app.querySelector<HTMLInputElement>(".url-input")!;
-  const customizeLink = app.querySelector<HTMLLinkElement>(".customize-link")!;
+  const customizeButton =
+    app.querySelector<HTMLButtonElement>(".customize-button")!;
   const customizeSection =
     app.querySelector<HTMLDivElement>(".customize-section")!;
   const defaultBangInput = customizeSection.querySelector<HTMLInputElement>(
     ".default-bang-input",
   )!;
-  const customizeLinkContainer = app.querySelector<HTMLParagraphElement>(
-    ".customize-link-container",
-  )!;
   const originalUrl = urlInput.value;
 
-  customizeLink.addEventListener("click", (e) => {
+  customizeButton.addEventListener("click", (e) => {
     e.preventDefault();
     customizeSection.style.display = "block";
-    customizeLinkContainer.style.display = "none";
+    customizeButton.style.display = "none";
   });
 
   defaultBangInput.addEventListener("input", () => {
