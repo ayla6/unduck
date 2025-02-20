@@ -97,7 +97,7 @@ function noSearchDefaultPageRender() {
     newBangElement.innerHTML = `
       <input type="text" value="${bang}" class="custom-bang-input" />
       <input type="text" value="${url}" class="custom-bang-url" />
-      <button class="custom-bang-delete">Delete</button>
+      <button class="custom-bang-delete">Rm</button>
     `;
 
     newBangElement
@@ -145,6 +145,22 @@ function noSearchDefaultPageRender() {
         alert("URL must contain %s as a placeholder");
         return;
       }
+
+      // Check if bang already exists
+      const existingBang = bangsArray.find((b) => b.t === bang);
+      if (existingBang) {
+        alert("This bang already exists");
+        return;
+      }
+
+      const existingCustomBangs = Array.from(
+        customBangsList.querySelectorAll(".custom-bang-input"),
+      ).map((input) => (input as HTMLInputElement).value);
+      if (existingCustomBangs.includes(bang)) {
+        alert("This bang already exists");
+        return;
+      }
+
       if (bang && url) {
         addCustomBangToList(bang, url);
         customBangInput.value = "";

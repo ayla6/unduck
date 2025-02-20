@@ -155,6 +155,8 @@ button:active {
     display: flex;
     flex-flow: column;
     gap: 4px;
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
 .custom-bang {
@@ -163,7 +165,7 @@ button:active {
 }
 
 .custom-bang button {
-    width: 25%;
+    width: 20%;
 }
 
 @media (prefers-color-scheme: dark) {
