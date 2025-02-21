@@ -21,6 +21,76 @@ if (typeof window !== "undefined") {
   );
 }
 
+const instanceDataUrl = "https://searx.space/data/instances.json";
+
+interface InstanceData {
+  instances: {
+    [url: string]: {
+      timing?: {
+        initial?: {
+          success_percentage?: number;
+          all?: {
+            value?: number;
+          };
+        };
+        search?: {
+          success_percentage?: number;
+          all?: {
+            median?: number;
+            stdev?: number;
+            mean?: number;
+          };
+        };
+      };
+      html?: {
+        grade?: string;
+      };
+    };
+  };
+}
+
+export async function getHighestRatedInstance(): Promise<string | null> {
+  try {
+    const response = await fetch(instanceDataUrl);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch instance data: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: InstanceData = (await response.json()) as InstanceData;
+    let fastestInstanceUrl: string | null = null;
+    let fastestResponseTime: number | null = null;
+
+    if (data.instances) {
+      for (const url in data.instances) {
+        const instance = data.instances[url];
+        const searchTiming = instance.timing?.search?.all?.median;
+
+        if (
+          typeof searchTiming === "number" &&
+          (fastestResponseTime === null || searchTiming < fastestResponseTime)
+        ) {
+          fastestResponseTime = searchTiming;
+          fastestInstanceUrl = url;
+        }
+      }
+    }
+
+    if (fastestInstanceUrl) {
+      return fastestInstanceUrl;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting highest rated instance:", error);
+    return null;
+  }
+}
+
+const searx =
+  new URL((await getHighestRatedInstance()) as string).host ?? "priv.au";
+
 export async function getBangs(): Promise<Bang[]> {
   return [
     {
@@ -31,6 +101,9 @@ export async function getBangs(): Promise<Bang[]> {
       (await fetch("https://duckduckgo.com/bang.js").then((r) =>
         r.json(),
       )) as FullBang[]
-    ).map((fullBang) => ({ t: fullBang.t, u: fullBang.u })),
+    ).map((fullBang) => ({
+      t: fullBang.t,
+      u: fullBang.u.replace(/searx\.me/g, searx),
+    })),
   ];
 }
