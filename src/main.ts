@@ -168,14 +168,18 @@ function noSearchDefaultPageRender() {
   loadCustomBangs();
 
   saveBangsButton.addEventListener("click", () => {
-    const inputs = customBangsList.querySelectorAll(".custom-bang");
-    customBangsArray = Array.from(inputs).map((bangDiv) => ({
-      t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
-        .value,
-      u: (
-        bangDiv.querySelector(".custom-bang-url") as HTMLInputElement
-      ).value.replace("%s", "{{{s}}}"),
-    }));
+    const inputs = customBangsList.querySelectorAll(".bang");
+    console.log(customBangsList);
+    customBangsArray = Array.from(inputs).map((bangDiv) => {
+      return {
+        t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
+          .value,
+        u: (
+          bangDiv.querySelector(".custom-bang-url") as HTMLInputElement
+        ).value.replace("%s", "{{{s}}}"),
+      };
+    });
+
     localStorage.setItem("custom-bangs", JSON.stringify(customBangsArray));
   });
 
