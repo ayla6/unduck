@@ -1,8 +1,6 @@
 import { getBangs } from "./bang" with { type: "macro" };
-import { suggestionOptions } from "./suggestion" with { type: "macro" };
 const bangs = await getBangs();
 
-import search from "../public/search.svg";
 import "./global.css";
 
 type Bang = { u: string; t: string };
@@ -11,28 +9,6 @@ const customBangs: Bang[] = JSON.parse(
 );
 
 function noSearchDefaultPageRender() {
-  const currentLocale = (
-    navigator.language || navigator.languages[0]
-  ).substring(0, 2);
-
-  const updateOpenSearch = (template: string, suggestions: string) => {
-    const opensearch = `<?xml version="1.0" encoding="UTF-8"?>
-  <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
-    <ShortName>Unduck</ShortName>
-    <Description>A better default search engine (with bangs!)</Description>
-    <InputEncoding>UTF-8</InputEncoding>
-    <Image width="16" height="16" type="image/svg+xml">${search}</Image>
-    <Url type="text/html" method="get" template="${template.replace("%s", "{searchTerms}")}"/>
-    <Url type="application/x-suggestions+json" template="${suggestions.replace("%s", "{searchTerms}")}"/>
-    <moz:SearchForm>${ownURL}</moz:SearchForm>
-  </OpenSearchDescription>`;
-
-    const link = document.getElementById("opensearch") as HTMLLinkElement;
-    link.href = `data:application/opensearchdescription+xml;base64,${btoa(
-      opensearch,
-    )}`;
-  };
-
   // Basic setup
   const ownURL = `${document.location.protocol}//${window.location.host}/`;
   const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -67,17 +43,6 @@ function noSearchDefaultPageRender() {
             <input type="checkbox" id="bang-end-checkbox" checked=true />
             <span>Bang at the end (bang!)</span>
           </label>
-        </div>
-        <div class="section">
-          <h3>Suggestions API</h3>
-          <div class="type-or-select">
-            <select id="suggestions-api-select">
-              <option value="">Select or enter a custom URL</option>
-              ${suggestionOptions().replace("%l", currentLocale)}
-            </select>
-            <input type="text" id="suggestions-api-custom" placeholder="Custom URL" style="display: none;">
-            <input type="text" id="suggestions-api-display" placeholder="Selected Suggestion API" readonly style="display: none;">
-          </div>
         </div>
         <button id="more-options-button">More Options</button>
       </div>
@@ -169,15 +134,6 @@ function noSearchDefaultPageRender() {
 
   const closeOptionsButton = app.querySelector<HTMLButtonElement>(
     "#close-options-button",
-  )!;
-  const suggestionsApiSelect = app.querySelector<HTMLSelectElement>(
-    "#suggestions-api-select",
-  )!;
-  const suggestionsApiCustom = app.querySelector<HTMLInputElement>(
-    "#suggestions-api-custom",
-  )!;
-  const suggestionsApiDisplay = app.querySelector<HTMLInputElement>(
-    "#suggestions-api-display",
   )!;
 
   let customBangsArray: Array<{ t: string; u: string }> = [];
@@ -279,8 +235,6 @@ function noSearchDefaultPageRender() {
   function updateUrl() {
     const defaultBang = defaultUrlBangInput.value.trim();
     const bangAtEnd = bangEndCheckbox.checked;
-    const suggestionsUrl =
-      suggestionsApiSelect.value || suggestionsApiCustom.value;
 
     let newUrl = `${ownURL}?q=%s`;
     if (defaultBang) {
@@ -290,13 +244,10 @@ function noSearchDefaultPageRender() {
       newUrl += "&nobae";
     }
     urlInput.value = newUrl;
-    updateOpenSearch(newUrl, suggestionsUrl);
   }
 
   defaultUrlBangInput.addEventListener("input", updateUrl);
   bangEndCheckbox.addEventListener("change", updateUrl);
-  suggestionsApiSelect.addEventListener("change", updateUrl);
-  suggestionsApiCustom.addEventListener("input", updateUrl);
 
   updateUrl();
 
@@ -308,17 +259,6 @@ function noSearchDefaultPageRender() {
       copyIcon.src = "/clipboard.svg";
     }, 2000);
   });
-
-  const suggestionApiSelectionUpdate = () => {
-    const isCustom = suggestionsApiSelect.value === "";
-    suggestionsApiCustom.style.display = isCustom ? "block" : "none";
-    suggestionsApiDisplay.style.display = !isCustom ? "block" : "none";
-    suggestionsApiDisplay.value = isCustom ? "" : suggestionsApiSelect.value;
-  };
-
-  suggestionsApiSelect.addEventListener("change", suggestionApiSelectionUpdate);
-
-  suggestionApiSelectionUpdate();
 }
 
 function getBangredirectUrl() {
