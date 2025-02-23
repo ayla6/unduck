@@ -19,7 +19,6 @@ function noSearchDefaultPageRender() {
         'DuckDuckGo\'s bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank">all of DuckDuckGo\'s bangs.</a>',
       copy: "Copy",
       defaultBangPlaceholder: "Default bang (ddg)",
-      bangAtEnd: "Bang at the end (bang!)",
       customBangs: "Custom bangs",
       applyToUrl: "Apply to URL (for incognito)",
       bangPlaceholder: "Bang (e.g. gh)",
@@ -61,10 +60,6 @@ function noSearchDefaultPageRender() {
             placeholder="${localize.defaultBangPlaceholder}"
             value="${localStorage.getItem("default-bang") ?? ""}"
           />
-          <label>
-            <input type="checkbox" id="bang-end-checkbox" checked="${localStorage.getItem("bang-end") ?? true}" />
-            <span>${localize.bangAtEnd}</span>
-          </label>
         </div>
         <div class="options-area">
           <label>
@@ -110,9 +105,6 @@ function noSearchDefaultPageRender() {
   const defaultUrlBangInput = app.querySelector<HTMLInputElement>(
     "#default-bang-input",
   )!;
-
-  const bangEndCheckbox =
-    app.querySelector<HTMLInputElement>("#bang-end-checkbox")!;
 
   const moreOptionsButton = app.querySelector<HTMLButtonElement>(
     "#more-options-button",
@@ -225,15 +217,11 @@ function noSearchDefaultPageRender() {
 
   function updateUrl() {
     const defaultBang = defaultUrlBangInput.value.trim();
-    const bangAtEnd = bangEndCheckbox.checked;
 
     let newUrl = `${ownURL}?q=%s`;
     if (applyToUrlCheckbox.checked) {
       if (defaultBang) {
         newUrl += `&d=${defaultBang}`;
-      }
-      if (!bangAtEnd) {
-        newUrl += "&nobae";
       }
       if (customBangsArray[0]) {
         newUrl += "&cb=" + encodeURI(JSON.stringify(customBangsArray));
@@ -248,7 +236,6 @@ function noSearchDefaultPageRender() {
     else localStorage.removeItem("default-bang");
     updateUrl();
   });
-  bangEndCheckbox.addEventListener("change", updateUrl);
   applyToUrlCheckbox.addEventListener("change", updateUrl);
 
   updateUrl();
@@ -265,7 +252,6 @@ function noSearchDefaultPageRender() {
 
 function getBangredirectUrl() {
   const query = url.searchParams.get("q")?.trim() ?? "";
-  const bangAtEnd = url.searchParams.get("nobae") === null;
   const urlDefault =
     localStorage.getItem("default-bang") ??
     url.searchParams.get("d")?.trim() ??
@@ -276,19 +262,20 @@ function getBangredirectUrl() {
     return null;
   }
 
-  const match = query.match(bangAtEnd ? /!(\S+)|(\S+)!/i : /!(\S+)/i);
+  const match = (() => {
+    const match = query.match(/(?<=^|\s)(?:!([^!\s]+)|([^!\s]{1,3})!)(?=\s|$)/);
+    return [match?.[1] ?? match?.[2], match?.[0]];
+  })();
 
   const multiSearch = (candidate: string) =>
     customBangs.find((b) => b.t === candidate) ??
     bangs.find((b) => b.t === candidate);
 
-  const bangCandidate = (match?.[1] ?? match?.[2])?.toLowerCase() ?? urlDefault;
+  const bangCandidate = match[0]?.toLowerCase() ?? urlDefault;
   const selectedBang = multiSearch(bangCandidate) ?? multiSearch(urlDefault);
 
   // Remove the first bang from the query
-  const cleanQuery = query
-    .replace(bangAtEnd ? /(!\S+)|(\S+!)\s*/i : /!\S+\s*/i, "")
-    .trim();
+  const cleanQuery = match ? query.replace(match[1] ?? "", "").trim() : query;
 
   // If the query is just `!gh`, use `github.com` instead of `github.com/search?q=`
   if (cleanQuery === "")
