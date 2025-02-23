@@ -3,22 +3,47 @@ const bangs = await getBangs();
 
 import "./global.css";
 
+const url = new URL(window.location.href);
+
 type Bang = { u: string; t: string };
 const customBangs: Bang[] = JSON.parse(
-  localStorage.getItem("custom-bangs") || "[]",
+  localStorage.getItem("custom-bangs") ??
+    url.searchParams.get("cb")?.trim() ??
+    "[]",
 );
 
 function noSearchDefaultPageRender() {
+  const localization = {
+    en: {
+      title: "Und*ck",
+      description:
+        'DuckDuckGo\'s bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank">all of DuckDuckGo\'s bangs.</a>',
+      copy: "Copy",
+      defaultBangPlaceholder: "Default bang (ddg)",
+      bangAtEnd: "Bang at the end (bang!)",
+      customBangs: "Custom bangs",
+      applyToUrl: "Apply to URL (for incognito)",
+      bangPlaceholder: "Bang (e.g. gh)",
+      targetUrlPlaceholder: "Target URL",
+      removeButton: "×",
+      saveButton: "Save",
+      closeButton: "Close",
+    },
+  };
   // Basic setup
   const ownURL = `${document.location.protocol}//${window.location.host}/`;
   const app = document.querySelector<HTMLDivElement>("#app")!;
+
+  const lang = navigator.language.split("-")[0];
+  const localize =
+    localization[lang as keyof typeof localization] || localization.en;
 
   // Render the main HTML template
   app.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
       <div class="content-container">
-        <h1>Und*ck</h1>
-        <p>DuckDuckGo's bang redirects are too slow. Add the following URL as a custom search engine to your browser. Enables <a href="https://duckduckgo.com/bang.html" target="_blank">all of DuckDuckGo's bangs.</a></p>
+        <h1>${localize.title}</h1>
+        <p>${localize.description}</p>
         <div class="url-container">
           <input
             type="text"
@@ -27,60 +52,53 @@ function noSearchDefaultPageRender() {
             readonly
           />
           <button id="copy-button">
-            <img src="/clipboard.svg" alt="Copy" />
+            <img src="/clipboard.svg" alt="${localize.copy}" />
           </button>
         </div>
         <div class="options-area">
-          <button id="default-url-bang-button">Enable custom default bang</button>
-          <div id="default-url-bang-section" style="display: none;">
-            <input
-              type="text"
-              id="default-url-bang-input"
-              placeholder="ddg (default)"
-            />
-          </div>
-          <label class="bang-end-label">
-            <input type="checkbox" id="bang-end-checkbox" checked=true />
-            <span>Bang at the end (bang!)</span>
+          <input
+            type="text"
+            id="default-bang-input"
+            placeholder="${localize.defaultBangPlaceholder}"
+            value="${localStorage.getItem("default-bang") ?? ""}"
+          />
+          <label>
+            <input type="checkbox" id="bang-end-checkbox" checked="${localStorage.getItem("bang-end") ?? true}" />
+            <span>${localize.bangAtEnd}</span>
           </label>
         </div>
-        <button id="more-options-button">More Options</button>
+        <div class="options-area">
+          <label>
+            <input type="checkbox" id="apply-to-url-checkbox" checked="true" />
+            <span>${localize.applyToUrl}</span>
+          </label>
+          <button id="more-options-button">${localize.customBangs}</button>
+        </div>
       </div>
     </div>
     <div id="more-options-popup" class="background">
       <div id="more-options-section" class="popup">
           <div class="section">
-            <h3>Default Bang</h3>
-            <div class="empty"></div>
-            <div class="bang">
-              <input
-                type="text"
-                id="default-bang-input"
-                placeholder="Bang (e.g. gh)"
-                value="${localStorage.getItem("default-bang") ?? "ddg"}"
-              />
-              <button id="default-bang-save">Save</button>
-            </div>
-          </div>
-          <div class="section">
-            <h3>Custom Bangs</h3>
+            <h3>${localize.customBangs}</h3>
             <div id="custom-bangs-list"></div>
             <div class="bang">
               <input
                 type="text"
                 id="custom-bang-input"
-                placeholder="Bang (e.g. gh)"
+                placeholder="${localize.bangPlaceholder}"
               />
               <input
                 type="text"
                 id="custom-bang-url"
-                placeholder="Target URL with %s"
+                placeholder="${localize.targetUrlPlaceholder}"
               />
-              <button id="custom-bang-add">Add</button>
+              <button style="visibility: hidden;">${localize.removeButton}</button>
             </div>
-            <button id="save-bangs-button">Save</button>
+            <div class="options-area">
+              <button id="save-bangs-button">${localize.saveButton}</button>
+              <button id="close-options-button">${localize.closeButton}</button>
+            </div>
           </div>
-          <button id="close-options-button">Close</button>
         </div>
     </div>
   `;
@@ -90,16 +108,9 @@ function noSearchDefaultPageRender() {
   const copyIcon = copyButton.querySelector("img")!;
   const urlInput = app.querySelector<HTMLInputElement>("#url-input")!;
 
-  const defaultUrlBangButton = app.querySelector<HTMLButtonElement>(
-    "#default-url-bang-button",
+  const defaultUrlBangInput = app.querySelector<HTMLInputElement>(
+    "#default-bang-input",
   )!;
-  const defaultUrlBangSection = app.querySelector<HTMLDivElement>(
-    "#default-url-bang-section",
-  )!;
-  const defaultUrlBangInput =
-    defaultUrlBangSection.querySelector<HTMLInputElement>(
-      "#default-url-bang-input",
-    )!;
 
   const bangEndCheckbox =
     app.querySelector<HTMLInputElement>("#bang-end-checkbox")!;
@@ -111,24 +122,12 @@ function noSearchDefaultPageRender() {
     "#more-options-popup",
   )!;
 
-  const moreOptionsSection = app.querySelector<HTMLDivElement>(
-    "#more-options-section",
-  )!;
-
-  const defaultBangInput = moreOptionsSection.querySelector<HTMLInputElement>(
-    "#default-bang-input",
-  )!;
-  const defaultBangSave =
-    moreOptionsSection.querySelector<HTMLInputElement>("#default-bang-save")!;
-
   const customBangsList =
     app.querySelector<HTMLDivElement>("#custom-bangs-list")!;
   const customBangInput =
     app.querySelector<HTMLInputElement>("#custom-bang-input")!;
   const customBangUrl =
     app.querySelector<HTMLInputElement>("#custom-bang-url")!;
-  const customBangAdd =
-    app.querySelector<HTMLButtonElement>("#custom-bang-add")!;
   const saveBangsButton =
     app.querySelector<HTMLButtonElement>("#save-bangs-button")!;
 
@@ -136,31 +135,50 @@ function noSearchDefaultPageRender() {
     "#close-options-button",
   )!;
 
-  let customBangsArray: Array<{ t: string; u: string }> = [];
+  const applyToUrlCheckbox = app.querySelector<HTMLInputElement>(
+    "#apply-to-url-checkbox",
+  )!;
+
+  let customBangsArray: Array<{ t: string; u: string }> = customBangs;
 
   function addCustomBangToList(bang: string, url: string) {
     const newBangElement = document.createElement("div");
     newBangElement.className = "bang";
-    newBangElement.innerHTML = `
-      <input type="text" value="${bang}" class="custom-bang-input" />
-      <input type="text" value="${url}" class="custom-bang-url" />
-      <button class="custom-bang-delete">Rm</button>
-    `;
+    const bangInput = document.createElement("input");
+    bangInput.type = "text";
+    bangInput.value = bang;
+    bangInput.className = "custom-bang-input";
+    bangInput.placeholder = localize.bangPlaceholder;
 
-    newBangElement
-      .querySelector(".custom-bang-delete")
-      ?.addEventListener("click", () => {
-        newBangElement.remove();
-      });
+    const urlInput = document.createElement("input");
+    urlInput.type = "text";
+    urlInput.value = url;
+    urlInput.className = "custom-bang-url";
+    urlInput.placeholder = localize.targetUrlPlaceholder;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "custom-bang-delete";
+    deleteButton.textContent = localize.removeButton;
+
+    newBangElement.append(bangInput, urlInput, deleteButton);
+
+    deleteButton.addEventListener("click", () => {
+      newBangElement.remove();
+    });
 
     customBangsList.appendChild(newBangElement);
+
+    return {
+      bangInput,
+      urlInput,
+    };
   }
 
   function loadCustomBangs() {
     if (customBangs) {
       customBangsList.innerHTML = "";
       customBangs.forEach((bang) => {
-        addCustomBangToList(bang.t, bang.u.replace("{{{s}}}", "%s"));
+        addCustomBangToList(bang.t, bang.u);
       });
     }
   }
@@ -169,7 +187,6 @@ function noSearchDefaultPageRender() {
 
   saveBangsButton.addEventListener("click", () => {
     const inputs = customBangsList.querySelectorAll(".bang");
-    console.log(customBangsList);
     customBangsArray = Array.from(inputs).map((bangDiv) => {
       return {
         t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
@@ -179,47 +196,24 @@ function noSearchDefaultPageRender() {
         ).value.replace("%s", "{{{s}}}"),
       };
     });
-
+    updateUrl();
     localStorage.setItem("custom-bangs", JSON.stringify(customBangsArray));
   });
 
-  // Event handlers
-  customBangAdd.addEventListener("click", () => {
+  const addCustomBang = () => {
     const bang = customBangInput.value.trim();
     const url = customBangUrl.value.trim();
 
-    try {
-      new URL(url);
-      if (!url.includes("%s")) {
-        alert("URL must contain %s as a placeholder");
-        return;
-      }
+    const { bangInput, urlInput } = addCustomBangToList(bang, url);
+    (document.activeElement === customBangInput ? bangInput : urlInput).focus();
 
-      // Check if bang already exists
-      const existingCustomBangs = Array.from(
-        customBangsList.querySelectorAll(".custom-bang-input"),
-      ).map((input) => (input as HTMLInputElement).value);
-      if (existingCustomBangs.includes(bang)) {
-        alert("This bang already exists");
-        return;
-      }
+    customBangInput.value = "";
+    customBangUrl.value = "";
+  };
 
-      if (bang && url) {
-        addCustomBangToList(bang, url);
-        customBangInput.value = "";
-        customBangUrl.value = "";
-      }
-    } catch (e) {
-      alert("Please enter a valid URL");
-      return;
-    }
-  });
-
-  defaultUrlBangButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    defaultUrlBangSection.style.display = "block";
-    defaultUrlBangButton.style.display = "none";
-  });
+  // Event handlers
+  customBangInput.addEventListener("input", addCustomBang);
+  customBangUrl.addEventListener("input", addCustomBang);
 
   moreOptionsButton.addEventListener("click", (e) => {
     e.preventDefault();
@@ -230,28 +224,33 @@ function noSearchDefaultPageRender() {
     moreOptionsPopup.style.display = "none";
   });
 
-  defaultBangSave.addEventListener("click", (e) => {
-    e.preventDefault();
-    const defaultBang = defaultBangInput.value.trim();
-    localStorage.setItem("default-bang", defaultBang);
-  });
-
   function updateUrl() {
     const defaultBang = defaultUrlBangInput.value.trim();
     const bangAtEnd = bangEndCheckbox.checked;
 
     let newUrl = `${ownURL}?q=%s`;
-    if (defaultBang) {
-      newUrl += `&default=${defaultBang}`;
-    }
-    if (!bangAtEnd) {
-      newUrl += "&nobae";
+    if (applyToUrlCheckbox.checked) {
+      if (defaultBang) {
+        newUrl += `&d=${defaultBang}`;
+      }
+      if (!bangAtEnd) {
+        newUrl += "&nobae";
+      }
+      if (customBangsArray[0]) {
+        newUrl += "&cb=" + JSON.stringify(customBangsArray);
+      }
     }
     urlInput.value = newUrl;
   }
 
-  defaultUrlBangInput.addEventListener("input", updateUrl);
+  defaultUrlBangInput.addEventListener("input", () => {
+    if (defaultUrlBangInput.value.trim())
+      localStorage.setItem("default-bang", defaultUrlBangInput.value);
+    else localStorage.removeItem("default-bang");
+    updateUrl();
+  });
   bangEndCheckbox.addEventListener("change", updateUrl);
+  applyToUrlCheckbox.addEventListener("change", updateUrl);
 
   updateUrl();
 
@@ -266,12 +265,11 @@ function noSearchDefaultPageRender() {
 }
 
 function getBangredirectUrl() {
-  const url = new URL(window.location.href);
   const query = url.searchParams.get("q")?.trim() ?? "";
   const bangAtEnd = url.searchParams.get("nobae") === null;
   const urlDefault =
-    url.searchParams.get("default")?.trim() ??
     localStorage.getItem("default-bang") ??
+    url.searchParams.get("d")?.trim() ??
     "ddg";
 
   if (!query) {
@@ -298,7 +296,7 @@ function getBangredirectUrl() {
     return selectedBang ? `https://${new URL(selectedBang.u).host}` : null;
 
   // Format of the url is:
-  // https://www.google.com/search?q={{{s}}}
+  // https://www.google.com/search?q=%s
   const searchUrl = selectedBang?.u.replace(
     "{{{s}}}",
     // Replace %2F with / to fix formats like "!ghr+t3dotgg/unduck"
