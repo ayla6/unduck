@@ -7,8 +7,8 @@ const url = new URL(window.location.href);
 
 type Bang = { u: string; t: string };
 const customBangs: Bang[] = JSON.parse(
-  localStorage.getItem("custom-bangs") ??
-    decodeURI(url.searchParams.get("cb")?.trim() ?? "[]"),
+  localStorage.getItem("custom-bangs") ?? "[]",
+  /*decodeURI(url.searchParams.get("cb")?.trim() ?? "[]")*/
 );
 
 function noSearchDefaultPageRender() {
@@ -223,9 +223,9 @@ function noSearchDefaultPageRender() {
       if (defaultBang) {
         newUrl += `&d=${defaultBang}`;
       }
-      if (customBangsArray[0]) {
+      /*if (customBangsArray[0]) {
         newUrl += "&cb=" + encodeURI(JSON.stringify(customBangsArray));
-      }
+        }*/
     }
     urlInput.value = newUrl;
   }
