@@ -8,7 +8,7 @@ const url = new URL(window.location.href);
 type Bang = { u: string; t: string };
 const customBangs: Bang[] = JSON.parse(
   localStorage.getItem("custom-bangs") ??
-    url.searchParams.get("cb")?.trim() ??
+    decodeURI(url.searchParams.get("cb")?.trim() ?? "") ??
     "[]",
 );
 
@@ -237,7 +237,7 @@ function noSearchDefaultPageRender() {
         newUrl += "&nobae";
       }
       if (customBangsArray[0]) {
-        newUrl += "&cb=" + JSON.stringify(customBangsArray);
+        newUrl += "&cb=" + encodeURI(JSON.stringify(customBangsArray));
       }
     }
     urlInput.value = newUrl;
