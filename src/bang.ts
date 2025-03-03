@@ -1,4 +1,5 @@
 // based on this fork https://github.com/Not-Jayden/unduck
+import crypto from "crypto";
 
 type FullBang = {
   c?: string;

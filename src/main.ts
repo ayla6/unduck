@@ -1,6 +1,7 @@
 import { getBangs } from "./bang" with { type: "macro" };
 const bangs = await getBangs();
 
+// @ts-ignore
 import "./global.css";
 
 const url = new URL(window.location.href);

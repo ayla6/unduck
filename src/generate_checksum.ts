@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 async function generateBangsChecksum() {
   try {
     const BANGS_VERSION = "dbe96505d1ea29e83d29d3255927d45d9b565490";
