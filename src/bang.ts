@@ -10,10 +10,7 @@ type FullBang = {
   u: string;
 };
 
-type Bang = {
-  t: string;
-  u: string;
-};
+type Bang = [t: string, u: string];
 
 if (typeof window !== "undefined") {
   throw new Error(
@@ -91,19 +88,33 @@ export async function getHighestRatedInstance(): Promise<string | null> {
 const searx =
   new URL((await getHighestRatedInstance()) as string).host ?? "priv.au";
 
+const BANGS_VERSION = "dbe96505d1ea29e83d29d3255927d45d9b565490";
+const EXPECTED_CHECKSUM =
+  "d338345f84bd46d9825e3da495f7cb6f7205d419dc015b173a6f4b9461cbfa7c";
+
 export async function getBangs(): Promise<Bang[]> {
+  const response = await fetch(
+    `https://github.com/kagisearch/bangs/raw/${BANGS_VERSION}/data/bangs.json`,
+  );
+  const buffer = await response.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  if (hashHex !== EXPECTED_CHECKSUM) {
+    throw new Error("Bangs file checksum mismatch");
+  }
+
   return [
-    {
-      t: "t3",
-      u: "https://www.t3.chat/new?q={{{s}}}",
-    },
-    ...(
-      (await fetch("https://duckduckgo.com/bang.js").then((r) =>
-        r.json(),
-      )) as FullBang[]
-    ).map((fullBang) => ({
-      t: fullBang.t,
-      u: fullBang.u.replace(/searx\.me/g, searx),
-    })),
+    ["t3", "https://www.t3.chat/new?q={{{s}}}"],
+    ...(JSON.parse(new TextDecoder().decode(buffer)) as FullBang[]).map(
+      (fullBang) =>
+        [
+          fullBang.t as string,
+          fullBang.u.replace(/searx\.me/g, searx) as string,
+        ] as Bang,
+    ),
   ];
 }
