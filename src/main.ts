@@ -5,7 +5,7 @@ import "./global.css";
 
 const url = new URL(window.location.href);
 
-type Bang = { u: string; t: string };
+type Bang = [t: string, u: string];
 const customBangs: Bang[] = JSON.parse(
   localStorage.getItem("custom-bangs") ?? "[]",
   /*decodeURI(url.searchParams.get("cb")?.trim() ?? "[]")*/
@@ -130,7 +130,7 @@ function noSearchDefaultPageRender() {
     "#apply-to-url-checkbox",
   )!;
 
-  let customBangsArray: Array<{ t: string; u: string }> = customBangs;
+  let customBangsArray: Array<Bang> = customBangs;
 
   function addCustomBangToList(bang: string, url: string) {
     const newBangElement = document.createElement("div");
@@ -169,7 +169,7 @@ function noSearchDefaultPageRender() {
     if (customBangs) {
       customBangsList.innerHTML = "";
       customBangs.forEach((bang) => {
-        addCustomBangToList(bang.t, bang.u);
+        addCustomBangToList(bang[0], bang[1]);
       });
     }
   }
@@ -179,13 +179,12 @@ function noSearchDefaultPageRender() {
   saveBangsButton.addEventListener("click", () => {
     const inputs = customBangsList.querySelectorAll(".bang");
     customBangsArray = Array.from(inputs).map((bangDiv) => {
-      return {
-        t: (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement)
-          .value,
-        u: (
+      return [
+        (bangDiv.querySelector(".custom-bang-input") as HTMLInputElement).value,
+        (
           bangDiv.querySelector(".custom-bang-url") as HTMLInputElement
         ).value.replace("%s", "{{{s}}}"),
-      };
+      ];
     });
     updateUrl();
     localStorage.setItem("custom-bangs", JSON.stringify(customBangsArray));
@@ -268,8 +267,8 @@ function getBangredirectUrl() {
   })();
 
   const multiSearch = (candidate: string) =>
-    customBangs.find((b) => b.t === candidate) ??
-    bangs.find((b) => b.t === candidate);
+    customBangs.find((b) => b[0] === candidate) ??
+    bangs.find((b) => b[0] === candidate);
 
   const bangCandidate = match[0]?.toLowerCase() ?? urlDefault;
   const selectedBang = multiSearch(bangCandidate) ?? multiSearch(urlDefault);
@@ -279,11 +278,11 @@ function getBangredirectUrl() {
 
   // If the query is just `!gh`, use `github.com` instead of `github.com/search?q=`
   if (cleanQuery === "")
-    return selectedBang ? `https://${new URL(selectedBang.u).host}` : null;
+    return selectedBang ? `https://${new URL(selectedBang[1]).host}` : null;
 
   // Format of the url is:
   // https://www.google.com/search?q=%s
-  const searchUrl = selectedBang?.u.replace(
+  const searchUrl = selectedBang?.[1].replace(
     "{{{s}}}",
     // Replace %2F with / to fix formats like "!ghr+t3dotgg/unduck"
     encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
