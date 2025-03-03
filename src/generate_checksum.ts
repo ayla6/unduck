@@ -2,7 +2,7 @@ import crypto from "crypto";
 
 async function generateBangsChecksum() {
   try {
-    const BANGS_VERSION = "dbe96505d1ea29e83d29d3255927d45d9b565490";
+    const BANGS_VERSION = "7c64a3e5318a4648096f468d6827fef7d0f97dab";
     const response = await fetch(
       `https://github.com/kagisearch/bangs/raw/${BANGS_VERSION}/data/bangs.json`,
     );

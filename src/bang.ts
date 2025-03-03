@@ -89,9 +89,9 @@ export async function getHighestRatedInstance(): Promise<string | null> {
 const searx =
   new URL((await getHighestRatedInstance()) as string).host ?? "priv.au";
 
-const BANGS_VERSION = "dbe96505d1ea29e83d29d3255927d45d9b565490";
+const BANGS_VERSION = "7c64a3e5318a4648096f468d6827fef7d0f97dab";
 const EXPECTED_CHECKSUM =
-  "d338345f84bd46d9825e3da495f7cb6f7205d419dc015b173a6f4b9461cbfa7c";
+  "cf78a75a43b794183eb437cefe5f7d3aabaa3849f06cb585eca32021bc900553";
 
 export async function getBangs(): Promise<Bang[]> {
   const response = await fetch(
